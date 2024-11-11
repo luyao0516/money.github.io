@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工作时间收入计算</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f5f5f5;
+    }
+    input[type="time"], input[type="number"] {
+        margin: 5px;
+        padding: 8px;
+        font-size: 1em;
+    }
+    button {
+        padding: 10px 20px;
+        font-size: 1em;
+        margin: 10px;
+        cursor: pointer;
+    }
+    .result {
+        margin-top: 20px;
+        font-size: 1.2em;
+    }
+</style>
+</head>
+<body>
+
+<h2>工作时间收入计算</h2>
+
+<div>
+    <label for="startTime">上班时间：</label>
+    <input type="time" id="startTime" required>
+</div>
+
+<div>
+    <label for="endTime">下班时间：</label>
+    <input type="time" id="endTime" required>
+</div>
+
+<div>
+    <label for="dailyIncome">每天收入 (元)：</label>
+    <input type="number" id="dailyIncome" required>
+</div>
+
+<button onclick="startTimer()">开始计算</button>
+
+<div class="result">
+    <p id="timeLeft">距离下班还剩：--:--:--</p>
+    <p id="moneyEarned">今天已经赚了：0 元</p>
+</div>
+
+<script>
+    let interval;
+
+    function startTimer() {
+        clearInterval(interval); // 清除之前的计时器
+
+        const startTime = document.getElementById("startTime").value;
+        const endTime = document.getElementById("endTime").value;
+        const dailyIncome = parseFloat(document.getElementById("dailyIncome").value);
+
+        if (!startTime || !endTime || isNaN(dailyIncome)) {
+            alert("请填写所有字段！");
+            return;
+        }
+
+        const start = new Date();
+        const [startHour, startMinute] = startTime.split(":").map(Number);
+        start.setHours(startHour, startMinute, 0);
+
+        const end = new Date();
+        const [endHour, endMinute] = endTime.split(":").map(Number);
+        end.setHours(endHour, endMinute, 0);
+
+        if (end <= start) {
+            alert("下班时间必须晚于上班时间！");
+            return;
+        }
+
+        const totalTime = (end - start) / 1000; // 总时间，单位：秒
+        interval = setInterval(() => {
+            const now = new Date();
+            const timeLeft = (end - now) / 1000; // 剩余时间，单位：秒
+
+            if (timeLeft <= 0) {
+                document.getElementById("timeLeft").textContent = "距离下班还剩：00:00:00";
+                document.getElementById("moneyEarned").textContent = `今天已经赚了：${dailyIncome} 元`;
+                clearInterval(interval);
+            } else {
+                const hours = Math.floor(timeLeft / 3600);
+                const minutes = Math.floor((timeLeft % 3600) / 60);
+                const seconds = Math.floor(timeLeft % 60);
+                document.getElementById("timeLeft").textContent = `距离下班还剩：${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                const timeElapsed = (now - start) / 1000; // 已过时间，单位：秒
+                const earned = (dailyIncome * timeElapsed) / totalTime;
+                document.getElementById("moneyEarned").textContent = `今天已经赚了：${earned.toFixed(2)} 元`;
+            }
+        }, 1000);
+    }
+</script>
+
+</body>
+</html>
